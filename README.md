@@ -43,9 +43,3 @@ They do what they called. Save game saves the level you left. Load game starts t
 
 ### 3. Highscore: 
 It saves the highest score of each level. It doesn't reset when you restart the game or etc.
-
-<hr/>
-
-# Sample Gameplay
-
-![temp](Screencast 2022-05-19 18_02_04.gif)
