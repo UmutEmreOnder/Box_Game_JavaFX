@@ -46,4 +46,4 @@ It saves the highest score of each level. It doesn't reset when you restart the 
 
 <hr />
 
-# [Sample Gameplay](https://github.com/UmutEmreOnder/Box_Game_JavaFX/blob/master/Sample%20Gameplay%20Gif/Gameplay.gif)
+# ![Sample Gameplay](https://github.com/UmutEmreOnder/Box_Game_JavaFX/blob/master/Sample%20Gameplay%20Gif/Gameplay.gif)
