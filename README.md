@@ -48,4 +48,4 @@ It saves the highest score of each level. It doesn't reset when you restart the 
 
 # Sample Gameplay
 
-![](Screencast 2022-05-19 18_02_04.gif)
+![temp](Screencast 2022-05-19 18_02_04.gif)
