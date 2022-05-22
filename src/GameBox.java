@@ -20,94 +20,55 @@ public class GameBox extends Application {
 
     // We declared a window here to change the scene in any method.
     private Stage window;
+    private Label levelLabel, restartLabel, currentScoreLabel, highScoreLabel, clickInfo, nextLevel;
+    private Button saveGameButton, mainMenuButton,newGameButton, loadGameButton, musicButton;
+    private Scene gameScene, menuScene;
+    private GridPane gameArea;
 
     public static void main(String[] args) {
         launch(args);
     }
 
-
-
-    @Override
-    public void start(Stage primaryStage) {
-        // Width and Height values of our gameScene
-        int width = 620, height = 420;
-
-        // This is the boxList that will shown in gameArea
-        Box[][] boxList = new Box[10][10];
-
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
-                boxList[i][j] = new WallBox(j, i);
-            }
-        }
-
-        window = primaryStage;
-
-        // Our gameScreen is a BorderPane to set it's top, center and bottom places with another panes.
-        BorderPane mainScreen = new BorderPane();
-
-
-        // Top pane is a HBox, it has 4 Labels. Level, Restart, Score and HighScore labels.
-        HBox top = new HBox();
-        Label levelLabel = new Label("Level #1");
+    public void prepareTop(HBox top) {
+        levelLabel = new Label("Level #1");
         levelLabel.setPadding(new Insets(0,100,0,50));
-        Label currentScoreLabel = new Label("0");
+        currentScoreLabel = new Label("0");
         currentScoreLabel.setPadding(new Insets(0,100,0,0));
-        Label highScoreLabel = new Label("High Score: 0");
-        Label restartLabel = new Label("Restart");
+        highScoreLabel = new Label("High Score: 0");
+        restartLabel = new Label("Restart");
         restartLabel.setPadding(new Insets(0,100,0,0));
         top.getChildren().addAll(levelLabel, restartLabel, currentScoreLabel, highScoreLabel);
+    }
 
-        // Center is a GridPane, It has the boxes in the boxList
-        GridPane gameArea = new GridPane();
+    public void prepareGameArea(GridPane gameArea) {
         gameArea.setStyle("-fx-background-color: #7f7f7f");
         gameArea.setHgap(3);
         gameArea.setVgap(3);
         gameArea.setPadding(new Insets(2, 2, 2, 120));
+    }
 
-
-        // Bottom pane is VBox containing 2 HBox
-
-        // First HBox contains 2 label, click info and next level labels.
-        HBox bottom1 = new HBox();
-        Label clickInfo = new Label("--Text--");
-        Label nextLevel = new Label("Next Level>>");
+    public void prepareBottoms(HBox bottom1, HBox bottom2) {
+        clickInfo = new Label("--Text--");
+        nextLevel = new Label("Next Level>>");
         nextLevel.setPadding(new Insets(0, 0, 0, 200));
         bottom1.getChildren().addAll(clickInfo, nextLevel);
         nextLevel.setVisible(false);
 
-        // Second HBox contains 2 buttons, save game and main menu button
-        HBox bottom2 = new HBox(50);
-        Button saveGameButton = new Button("Save Game");
-        Button mainMenuButton = new Button("Main Menu");
+        saveGameButton = new Button("Save Game");
+        mainMenuButton = new Button("Main Menu");
         bottom2.getChildren().addAll(saveGameButton, mainMenuButton);
         bottom2.setAlignment(Pos.CENTER);
+    }
 
-        // Here is the our bottom pane which is VBox
-        VBox bottom = new VBox();
-        bottom.getChildren().addAll(bottom1, bottom2);
-
-        // Setting the panes
-        mainScreen.setBottom(bottom);
-        mainScreen.setTop(top);
-        mainScreen.setCenter(gameArea);
-
-        // Setting the scene
-        Scene gameScene = new Scene(mainScreen, width, height);
-
-        // Main Menu is created with a VBox, it has 3 buttons. 
-        VBox mainMenu = new VBox(15);
-        Button newGameButton = new Button("New Game");
-        Button loadGameButton = new Button("Load Game");
-        Button MusicButton = new Button("Music On/Off");
-        mainMenu.getChildren().addAll(newGameButton, loadGameButton,MusicButton);
+    public void prepareMainMenu(VBox mainMenu) {
+        newGameButton = new Button("New Game");
+        loadGameButton = new Button("Load Game");
+        musicButton = new Button("Music On/Off");
+        mainMenu.getChildren().addAll(newGameButton, loadGameButton,musicButton);
         mainMenu.setAlignment(Pos.CENTER);
+    }
 
-        // Setting the scene
-        Scene menuScene = new Scene(mainMenu, 200, 200);
-
-        // Main Menu Buttons Actions
-
+    public void prepareButtonActions(Box[][] boxList) {
         newGameButton.setOnAction(e -> {
             // Changes the scene first
             window.setScene(gameScene);
@@ -142,7 +103,7 @@ public class GameBox extends Application {
         });
 
         // Music button to on/off the background music.
-        MusicButton.setOnAction(e -> {
+        musicButton.setOnAction(e -> {
             if(background.isAutoPlay()){
                 background.pause();
                 background.setAutoPlay(false);
@@ -156,7 +117,7 @@ public class GameBox extends Application {
 
         // GameScene Click Events and Button Actions
 
-        // Restart Label gets the level value from the label and re-prepare the same level and reorganize the nextLevel label. 
+        // Restart Label gets the level value from the label and re-prepare the same level and reorganize the nextLevel label.
         restartLabel.setOnMouseClicked(e -> {
             int level = Character.getNumericValue(levelLabel.getText().charAt(7));
             try {
@@ -164,65 +125,6 @@ public class GameBox extends Application {
                 nextLevel.setVisible(false);
             } catch (FileNotFoundException fileNotFoundException) {
                 fileNotFoundException.printStackTrace();
-            }
-        });
-
-
-        // Box Click event
-
-        gameArea.setOnMouseClicked(e -> {
-            // Gets the current score
-            int scoreBefore = Integer.parseInt(currentScoreLabel.getText());
-
-            // Calculates the destroys and the score according to the count of box destroyed.
-            int scoreNow = 0;
-            for (int i = 0; i < 10; i++) {
-                for (int j = 0; j < 10; j++) {
-                    // After a click made in the gameArea, every Clickable boxes will be checked
-                    // When a click made a box, its isClicked value will be true. This way we can find the box that clicked.
-                    if (boxList[j][i] instanceof Clickable && ((Clickable) boxList[j][i]).isClicked()) {
-                        clickInfo.setText("Box: " + boxList[j][i].getCurrentX() + "-" + boxList[j][i].getCurrentY());
-                        // Calculates the count of the boxes destroyed
-                        int count = calculateCount(boxList, i, j, clickInfo);
-                        // Changes the isClicked value of the clicked box to the false
-                        ((Clickable) boxList[j][i]).setClicked(false);
-                        // Calculates the new score 
-                        scoreNow = getScoreNow(currentScoreLabel, scoreBefore, scoreNow, count, clickInfo);
-                    }
-                }
-            }
-            // Whenever a click made, we need to check the gameArea to find is the game finished
-            if (isDone(boxList)) {
-                // If it is then 
-
-                int level = Character.getNumericValue(levelLabel.getText().charAt(7));
-                try {
-                    // We update the highscore label first
-                    updateHighScore(currentScoreLabel, highScoreLabel, levelLabel);
-                } catch (FileNotFoundException fileNotFoundException) {
-                    fileNotFoundException.printStackTrace();
-                }
-
-                if (level == 5) {
-                    // Since there is no more level we change its text to Main Menu
-                    nextLevel.setText("Main Menu >>");
-                }
-                nextLevel.setVisible(true);
-
-                // If the level is done, the nextLevel label appears and if we click it we go to the next level if there is a next level or to the main menu. 
-                nextLevel.setOnMouseClicked(event -> {
-                    try {
-                        if (level == 5) {
-                            window.setScene(menuScene);
-                        }
-                        else {
-                            prepareGameScreen(boxList, level + 1, gameArea, levelLabel, currentScoreLabel, highScoreLabel, clickInfo);
-                        }
-                        nextLevel.setVisible(false);
-                    } catch (FileNotFoundException fileNotFoundException) {
-                        fileNotFoundException.printStackTrace();
-                    }
-                });
             }
         });
 
@@ -239,6 +141,128 @@ public class GameBox extends Application {
 
         // Main Menu button basically sets the scene to the menuScene
         mainMenuButton.setOnAction( e -> window.setScene(menuScene));
+    }
+
+    public void boxClickEvent(Box[][] boxList) {
+        gameArea.setOnMouseClicked(e -> {
+            // Gets the current score
+            int scoreBefore = Integer.parseInt(currentScoreLabel.getText());
+
+            // Calculates the destroys and the score according to the count of box destroyed.
+            int scoreNow = 0;
+            for (int i = 0; i < 10; i++) {
+                for (int j = 0; j < 10; j++) {
+                    // After a click made in the gameArea, every Clickable boxes will be checked
+                    // When a click made a box, its isClicked value will be true. This way we can find the box that clicked.
+                    if (boxList[j][i] instanceof Clickable && ((Clickable) boxList[j][i]).isClicked()) {
+                        clickInfo.setText("Box: " + boxList[j][i].getCurrentX() + "-" + boxList[j][i].getCurrentY());
+                        // Calculates the count of the boxes destroyed
+                        int count = calculateCount(boxList, i, j, clickInfo);
+                        // Changes the isClicked value of the clicked box to the false
+                        ((Clickable) boxList[j][i]).setClicked(false);
+                        // Calculates the new score
+                        scoreNow = getScoreNow(currentScoreLabel, scoreBefore, scoreNow, count, clickInfo);
+                    }
+                }
+            }
+            // Whenever a click made, we need to check the gameArea to find is the game finished
+            if (isDone(boxList)) {
+                // If it is then
+
+                int level = Character.getNumericValue(levelLabel.getText().charAt(7));
+                try {
+                    // We update the highscore label first
+                    updateHighScore(currentScoreLabel, highScoreLabel, levelLabel);
+                } catch (FileNotFoundException fileNotFoundException) {
+                    fileNotFoundException.printStackTrace();
+                }
+
+                if (level == 5) {
+                    // Since there is no more level we change its text to Main Menu
+                    nextLevel.setText("Main Menu >>");
+                }
+                nextLevel.setVisible(true);
+
+                // If the level is done, the nextLevel label appears and if we click it we go to the next level if there is a next level or to the main menu.
+                nextLevel.setOnMouseClicked(event -> {
+                    try {
+                        if (level == 5) {
+                            window.setScene(menuScene);
+                        }
+                        else {
+                            prepareGameScreen(boxList, level + 1, gameArea, levelLabel, currentScoreLabel, highScoreLabel, clickInfo);
+                        }
+                        nextLevel.setVisible(false);
+                    } catch (FileNotFoundException fileNotFoundException) {
+                        fileNotFoundException.printStackTrace();
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+        // Width and Height values of our gameScene
+        int width = 620, height = 420;
+
+        // This is the boxList that will shown in gameArea
+        Box[][] boxList = new Box[10][10];
+
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                boxList[i][j] = new WallBox(j, i);
+            }
+        }
+
+        window = primaryStage;
+
+        // Our gameScreen is a BorderPane to set it's top, center and bottom places with another panes.
+        BorderPane mainScreen = new BorderPane();
+
+
+        // Top pane is a HBox, it has 4 Labels. Level, Restart, Score and HighScore labels.
+        HBox top = new HBox();
+        prepareTop(top);
+
+        // Center is a GridPane, It has the boxes in the boxList
+        gameArea = new GridPane();
+        prepareGameArea(gameArea);
+
+
+        // Bottom pane is VBox containing 2 HBox
+        // First HBox contains 2 label, click info and next level labels.
+        HBox bottom1 = new HBox();
+        // Second HBox contains 2 buttons, save game and main menu button
+        HBox bottom2 = new HBox(50);
+
+        prepareBottoms(bottom1, bottom2);
+
+        // Here is the our bottom pane which is VBox
+        VBox bottom = new VBox();
+        bottom.getChildren().addAll(bottom1, bottom2);
+
+        // Setting the panes
+        mainScreen.setBottom(bottom);
+        mainScreen.setTop(top);
+        mainScreen.setCenter(gameArea);
+
+        // Setting the scene
+        gameScene = new Scene(mainScreen, width, height);
+
+        // Main Menu is created with a VBox, it has 3 buttons. 
+        VBox mainMenu = new VBox(15);
+        prepareMainMenu(mainMenu);
+
+        // Setting the scene
+        menuScene = new Scene(mainMenu, 200, 200);
+        // Main Menu Buttons Actions
+
+        prepareButtonActions(boxList);
+
+        // Box Click event
+
+        boxClickEvent(boxList);
 
         // Setting the first scene as a menuScene
         window.setScene(menuScene);
@@ -256,11 +280,21 @@ public class GameBox extends Application {
         // Choosing the file according to the level
         File file = null;
         switch (level) {
-            case 1:  file = new File("levels/level1.txt"); break;
-            case 2:  file = new File("levels/level2.txt"); break;
-            case 3:  file = new File("levels/level3.txt"); break;
-            case 4:  file = new File("levels/level4.txt"); break;
-            case 5:  file = new File("levels/level5.txt"); break;
+            case 1:
+                file = new File("levels/level1.txt");
+                break;
+            case 2:
+                file = new File("levels/level2.txt");
+                break;
+            case 3:
+                file = new File("levels/level3.txt");
+                break;
+            case 4:
+                file = new File("levels/level4.txt");
+                break;
+            default:
+                file = new File("levels/level5.txt");
+                break;
         }
 
         // Updating boxList
@@ -292,7 +326,7 @@ public class GameBox extends Application {
                     case "Mirror":
                         boxList[rowIndex][columnIndex] = new MirrorBox(columnIndex, rowIndex);
                         break;
-                    case "Wood":
+                    default:
                         boxList[rowIndex][columnIndex] = new WoodBox(columnIndex, rowIndex);
                         break;
                 }
@@ -336,7 +370,7 @@ public class GameBox extends Application {
                 ((Clickable)boxList[j-1][i]).click();
                 clickInfo.setText(clickInfo.getText() + " - Hit: " + boxList[j-1][i].getCurrentX() + "," + boxList[j-1][i].getCurrentY());
             }
-        } catch (IndexOutOfBoundsException exc){}
+        } catch (IndexOutOfBoundsException ignored){}
 
         // Top
         try {
@@ -345,7 +379,7 @@ public class GameBox extends Application {
                 ((Clickable)boxList[j+1][i]).click();
                 clickInfo.setText(clickInfo.getText() + " - Hit: " + boxList[j+1][i].getCurrentX() + "," + boxList[j+1][i].getCurrentY());
             }
-        } catch (IndexOutOfBoundsException exc){}
+        } catch (IndexOutOfBoundsException ignored){}
 
         // Left 
         try {
@@ -354,7 +388,7 @@ public class GameBox extends Application {
                 ((Clickable)boxList[j][i-1]).click();
                 clickInfo.setText(clickInfo.getText() + " - Hit: " + boxList[j][i-1].getCurrentX() + "," + boxList[j][i-1].getCurrentY());
             }
-        } catch (IndexOutOfBoundsException exc){}
+        } catch (IndexOutOfBoundsException ignored){}
 
         // Right
         try {
@@ -363,7 +397,7 @@ public class GameBox extends Application {
                 ((Clickable)boxList[j][i+1]).click();
                 clickInfo.setText(clickInfo.getText() + " - Hit: " + boxList[j][i+1].getCurrentX() + "," + boxList[j][i+1].getCurrentY());
             }
-        } catch (IndexOutOfBoundsException exc){}
+        } catch (IndexOutOfBoundsException ignored){}
 
         return count;
     }
@@ -391,11 +425,10 @@ public class GameBox extends Application {
                 clickInfo.setText(clickInfo.getText() + " (+2 Points)");
                 break;
             }
-            case 5: {
+            default:
                 scoreNow = scoreBefore + 4;
                 clickInfo.setText(clickInfo.getText() + " (+4 Points)");
                 break;
-            }
         }
 
         // Updating the current score label
@@ -412,12 +445,12 @@ public class GameBox extends Application {
         for(int i = 1; i < 6; i++) {
             if(i == level) {
                 // The highScore.txt has lines like "1 3" which means "Level: 1 High Score: 3" so we only need the 2nd value. We skip the first and get the 2nd.
-                int temp = scoreReader.nextInt();
+                scoreReader.nextInt();
                 highScore = scoreReader.nextInt();
             }
             else {
                 // To skip lines since i == level
-                String temp = scoreReader.nextLine();
+                scoreReader.nextLine();
             }
         }
         scoreReader.close();
